@@ -9,16 +9,25 @@ gCamHeight = 1.
 
 def createVertexArraySeparate():
     varr = np.array([
+        # 4 faced pyramid
+        # bottom side
         (0, 0, 0),  # v0
         (0, 0, 1.5),  # v2
         (1.5, 0, 0),  # v1
 
+        # blue/green side
         (0, 0, 0),  # v0
         (0, 0, 1.5),  # v2
         (0, 1.5, 0),  # v3
 
+        # slanted side
         (1.5, 0, 0),  # v1
         (0, 0, 1.5),  # v2
+        (0, 1.5, 0),  # v3
+
+        # green/red side
+        (0, 0, 0),  # v0
+        (1.5, 0, 0),  # v1
         (0, 1.5, 0),  # v3
     ], 'float32')
     return varr
