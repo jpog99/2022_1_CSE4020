@@ -59,20 +59,43 @@ def drawCubeArray():
                 drawUnitCube()
                 glPopMatrix()
 
+
+def myOrtho(left, right, bottom, top, zNear, zFar):
+    #from slide #6-21
+    Morth = np.array([[2/(right-left), 0, 0, -(right+left)/(right-left)],
+                      [0, 2/(top-bottom), 0, -(top+bottom)/(top-bottom)],
+                      [0, 0, -2/(zFar-zNear),-(zFar+zNear)/(zFar-zNear)],
+                      [0, 0, 0, 1]])
+    glMultMatrixf(np.transpose(Morth))
+
+def myLookAt(eye, at, up):
+    #from slide #5-47
+    w = (eye-at)/(np.sqrt(np.dot(eye-at,eye-at)))
+    u = (np.cross(up,w))/(np.sqrt(np.dot(np.cross(up,w), np.cross(up,w))))
+    v = np.cross(w,u)
+
+    Mv = np.array([[u[0],u[1],u[2], -u@eye],
+                   [v[0],v[1],v[2], -v@eye],
+                   [w[0],w[1],w[2], -w@eye],
+                   [0,0,0,1]])
+
+    glMultMatrixf(np.transpose(Mv))
+
 def render():
-     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-     glEnable(GL_DEPTH_TEST)
-     glPolygonMode( GL_FRONT_AND_BACK, GL_LINE )
-     glLoadIdentity()
-     gluPerspective(45, 1, 1,10)
-     # Replace this call with two glRotatef() calls and one glTranslatef() call
-     #gluLookAt(3,3,3, 0,0,0, 0,1,0)
-     glRotatef(-45,0,1,0)
-     glRotatef(-35.264, -1, 0, 1)
-     glTranslatef(-3,-3,-3)
-     drawFrame()
-     glColor3ub(255, 255, 255)
-     drawCubeArray()
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    glEnable(GL_DEPTH_TEST)
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+    glLoadIdentity()
+    myOrtho(-5, 5, -5, 5, -8, 8)
+    myLookAt(np.array([5, 3, 5]), np.array([1, 1, -1]), np.array([0, 1, 0]))
+    # Above two lines must behaves exactly same as the below two lines
+    # glOrtho(-5,5, -5,5, -8,8)
+    # gluLookAt(5,3,5, 1,1,-1, 0,1,0)
+    drawFrame()
+    glColor3ub(255, 255, 255)
+    drawCubeArray()
+
+
 
 def main():
     # Initialize the library
@@ -101,3 +124,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
