@@ -43,17 +43,17 @@ motionData = []
 currentMotion = ""
 
 #hierarchical models
-global boxObj,headObj
+global boxObj,headObj,bodyObj,armObj,forearmObj,handObj,thighObj,calfObj,footObj
 
 I = np.identity(3)
 
 def parseHierarchy(bvhFile):
 
     jointName = ""
-
     getExtraCred = False
     extraCredFile = "sample-spin.bvh"
-    if bvhFile.split('\\')[-1] == extraCredFile: getExtraCred = True
+    if bvhFile.split('\\')[-1] == extraCredFile:
+        getExtraCred = True
 
     endSite = False
     currFrameMotion = currentMotion.split()
@@ -83,67 +83,154 @@ def parseHierarchy(bvhFile):
                 glEnd()
             else:
                 glPushMatrix()
+                ### HIPS ###
                 if jointName == 'Spine':
                     glScalef(.05, .005, .05)
                     drawObj(boxObj)
                 elif jointName == 'Head':
                     if endSite:
-                        glTranslatef(0., .2, 0.)
-                        glScalef(.1, .1, .1)
-                        if getExtraCred: drawObj(headObj)
-                        else: drawObj(boxObj)
+                        ### HEAD ###
+                        if getExtraCred:
+                            glTranslatef(-.04, .1, .04)
+                            glScalef(.02, .02, .02)
+                            drawObj(headObj)
+                        else:
+                            glTranslatef(0., .2, 0.)
+                            glScalef(.1, .1, .1)
+                            drawObj(boxObj)
                     else:
+                        ### TORSO ###
                         glTranslatef(0., .1, 0.)
-                        glScalef(.05, .2, .05)
-                        drawObj(boxObj)
+                        if getExtraCred:
+                            glScalef(.01, .01, .01)
+                            drawObj(bodyObj)
+                        else:
+                            glScalef(.05, .2, .05)
+                            drawObj(boxObj)
                 elif jointName == 'RightForeArm':
-                    glScalef(.13, .05, .05)
-                    drawObj(boxObj)
+                    ### RIGHT ARM ###
+                    if getExtraCred:
+                        glTranslatef(-.11, .1, 0.)
+                        glScalef(.01, .01, .01)
+                        drawObj(armObj)
+                    else:
+                        glScalef(.13, .05, .05)
+                        drawObj(boxObj)
                 elif jointName == 'RightHand':
                     if endSite:
-                        glTranslatef(-.2, .0, 0.)
-                        glScalef(.05, .05, .05)
+                        ### RIGHT HAND ###
+                        if getExtraCred:
+                            glTranslatef(0., .15, 0.)
+                            glScalef(.01, .01, .01)
+                            drawObj(handObj)
+                        else:
+                            glTranslatef(-.2, .0, 0.)
+                            glScalef(.05, .05, .05)
+                            drawObj(boxObj)
                     else:
-                        glTranslatef(-.1, .0, 0.)
-                        glScalef(.20, .05, .05)
-                    drawObj(boxObj)
+                        ### RIGHT FOREARM ###
+                        if getExtraCred:
+                            glTranslatef(0., .1, 0.)
+                            glScalef(.01, .01, .01)
+                            drawObj(forearmObj)
+                        else:
+                            glTranslatef(-.1, .0, 0.)
+                            glScalef(.20, .05, .05)
+                            drawObj(boxObj)
                 elif jointName == 'LeftForeArm':
-                    glScalef(.13, .05, .05)
-                    drawObj(boxObj)
+                    ### LEFT ARM ###
+                    if getExtraCred:
+                        glTranslatef(.11, .1, 0.)
+                        glScalef(-.01, .01, -.01)
+                        drawObj(armObj)
+                    else:
+                        glScalef(-.13, .05, -.05)
+                        drawObj(boxObj)
                 elif jointName == 'LeftHand':
+                    ### LEFT HAND ###
                     if endSite:
-                        glTranslatef(.2, .0, 0.)
-                        glScalef(.05, .05, .05)
+                        if getExtraCred:
+                            glTranslatef(0., .15, 0.)
+                            glScalef(-.01, .01, -.01)
+                            drawObj(handObj)
+                        else:
+                            glTranslatef(.2, .0, 0.)
+                            glScalef(-.05, .05, -.05)
+                            drawObj(boxObj)
                     else:
-                        glTranslatef(.1, .0, 0.)
-                        glScalef(.20, .05, .05)
-                    drawObj(boxObj)
+                        ### LEFT FOREARM ###
+                        if getExtraCred:
+                            glTranslatef(0., .1, 0.)
+                            glScalef(-.01, .01, -.01)
+                            drawObj(forearmObj)
+                        else:
+                            glTranslatef(.1, .0, 0.)
+                            glScalef(-.20, .05, -.05)
+                            drawObj(boxObj)
                 elif jointName == 'RightLeg':
-                    glScalef(.05, .2, .05)
-                    glTranslatef(0., -1, 0.)
-                    drawObj(boxObj)
+                    ### RIGHT THIGH ###
+                    if getExtraCred:
+                        glScalef(.01, .01, .01)
+                        glTranslatef(0., -10, 0.)
+                        drawObj(thighObj)
+                    else:
+                        glScalef(.05, .2, .05)
+                        glTranslatef(0., -1, 0.)
+                        drawObj(boxObj)
                 elif jointName == 'RightFoot':
+                    ### RIGHT FOOT ###
                     if endSite:
-                        glTranslatef(0, -.2, 0.)
-                        glScalef(.05, .05, .05)
-                        glRotatef(-60, 1, 0, 0)
+                        glRotatef(30, 1, 0, 0)
+                        if getExtraCred:
+                            glTranslatef(0, -.01, -.01)
+                            glScalef(.01, .01, .01)
+                            drawObj(footObj)
+                        else:
+                            glTranslatef(0, -.2, 0.)
+                            glScalef(.05, .05, .05)
+                            drawObj(boxObj)
+                    ### RIGHT CALF ###
                     else:
-                        glTranslatef(0, -.2, 0.)
-                        glScalef(.05, .2, .05)
-                    drawObj(boxObj)
+                        if getExtraCred:
+                            glTranslatef(0, -.1, -.05)
+                            glScalef(.01, .01, .01)
+                            drawObj(calfObj)
+                        else:
+                            glTranslatef(0, -.2, 0.)
+                            glScalef(.05, .2, .05)
+                            drawObj(boxObj)
                 elif jointName == 'LeftLeg':
-                    glScalef(.05, .2, .05)
-                    glTranslatef(0., -1, 0.)
-                    drawObj(boxObj)
-                elif jointName == 'LeftFoot':
-                    if endSite:
-                        glTranslatef(0, -.2, 0.)
-                        glScalef(.05, .05, .05)
-                        glRotatef(-60, 1, 0, 0)
+                    ### LEFT THIGH ###
+                    if getExtraCred:
+                        glScalef(-.01, .01, -.01)
+                        glTranslatef(0., -10, 0.)
+                        drawObj(thighObj)
                     else:
-                        glTranslatef(0, -.2, 0.)
-                        glScalef(.05, .2, .05)
-                    drawObj(boxObj)
+                        glScalef(-.05, .2, -.05)
+                        glTranslatef(0., -1, 0.)
+                        drawObj(boxObj)
+                elif jointName == 'LeftFoot':
+                    ### LEFT FOOT ###
+                    if endSite:
+                        glRotatef(30, 1, 0, 0)
+                        if getExtraCred:
+                            glTranslatef(0, -.01, -.01)
+                            glScalef(-.01, .01, .01)
+                            drawObj(footObj)
+                        else:
+                            glTranslatef(0, -.2, 0.)
+                            glScalef(.05, .05, .05)
+                            drawObj(boxObj)
+                    ### LEFT CALF ###
+                    else:
+                        if getExtraCred:
+                            glTranslatef(0, -.1, -.05)
+                            glScalef(-.01, .01, -.01)
+                            drawObj(calfObj)
+                        else:
+                            glTranslatef(0, -.2, 0.)
+                            glScalef(.05, .2, .05)
+                            drawObj(boxObj)
                 glPopMatrix()
             glTranslatef(float(words[1]), float(words[2]), float(words[3]))
             endSite = False
@@ -451,7 +538,7 @@ def parseObjFile(paths):
     return gVertexArraySeparate
 
 def createModelFiles():
-    global narr, varr, gVertexArraySeparate, boxObj, headObj
+    global narr, varr, gVertexArraySeparate, boxObj,headObj,bodyObj,armObj,forearmObj,handObj,thighObj,calfObj,footObj
     dir = 'HierarchicalModelFiles'
     for filename in os.listdir(dir):
         path = os.path.join(dir, filename)
@@ -460,9 +547,22 @@ def createModelFiles():
         gVertexArraySeparate = np.empty((0, 3))
         if path == os.path.join(dir, "box.obj"):
             boxObj = parseObjFile(path)
-        elif path == os.path.join(dir, "body.obj"):
+        elif path == os.path.join(dir, "head.obj"):
             headObj = parseObjFile(path)
-
+        elif path == os.path.join(dir, "body.obj"):
+            bodyObj = parseObjFile(path)
+        elif path == os.path.join(dir, "rightarm.obj"):
+            armObj = parseObjFile(path)
+        elif path == os.path.join(dir, "rightforearm.obj"):
+            forearmObj = parseObjFile(path)
+        elif path == os.path.join(dir, "righthand.obj"):
+            handObj = parseObjFile(path)
+        elif path == os.path.join(dir, "thigh.obj"):
+            thighObj = parseObjFile(path)
+        elif path == os.path.join(dir, "calf.obj"):
+            calfObj = parseObjFile(path)
+        elif path == os.path.join(dir, "foot.obj"):
+            footObj = parseObjFile(path)
 
 def drawXZ():
     glBegin(GL_LINES)
