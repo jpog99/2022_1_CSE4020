@@ -95,13 +95,13 @@ def parseHierarchy(bvhFile):
                 else:
                     if "ForeArm" in jointName or "Hand" in jointName:
                         glRotatef(-90, 0, 0, 1)
-                        glScalef(1, float(words[1]) / 2, 1)
+                        glScalef(.05, float(words[1]) / 2, .05)
                         drawObj(boxObj)
                     elif jointName == "Hips":
                         glPopMatrix()
                         continue
                     else:
-                        glScalef(1, float(words[2]) / 2, 1)
+                        glScalef(.05, float(words[2]) / 2, .05)
                         drawObj(boxObj)
                 glPopMatrix()
             glTranslatef(float(words[1]), float(words[2]), float(words[3]))
