@@ -1,4 +1,5 @@
 import os.path
+import random
 
 import glfw
 from OpenGL.GL import *
@@ -39,6 +40,7 @@ gVertexArraySeparate = np.empty((0, 3)) #index array for v and vn
 bvhFile = ""
 framesIdx = 0
 framesTotal = 0
+jointOffsetData = []
 motionData = []
 currentMotion = ""
 
@@ -54,12 +56,14 @@ def parseHierarchy(bvhFile):
     extraCredFile = "sample-spin.bvh"
     if bvhFile.split('\\')[-1] == extraCredFile:
         getExtraCred = True
+    nextOffset = 0
 
     endSite = False
     currFrameMotion = currentMotion.split()
     idx = 0
     f = open(bvhFile, 'r')
     while True:
+        color = random.randint(0, 255)
         line = f.readline()
         if not line: break
         words = line.split()
@@ -76,12 +80,17 @@ def parseHierarchy(bvhFile):
         elif (words[0] == 'JOINT'):
             jointName = words[1]
         elif (words[0] == 'OFFSET'):
+            nextOffset += 1
             if mode_lineRendering:
-                glBegin(GL_LINES)
+                glDisable(GL_LIGHTING)
+                glColor3ub(color,color,color)
+                glBegin(GL_POINTS)
                 glVertex3fv(np.array([0, 0, 0]))
                 glVertex3fv(np.array([float(words[1]), float(words[2]), float(words[3])]))
                 glEnd()
+
             else:
+                #glTranslatef(float(words[1]), float(words[2]), float(words[3]))
                 glPushMatrix()
                 ### HIPS ###
                 if jointName == 'Spine':
@@ -95,17 +104,18 @@ def parseHierarchy(bvhFile):
                             glScalef(.02, .02, .02)
                             drawObj(headObj)
                         else:
-                            glTranslatef(0., .2, 0.)
-                            glScalef(.1, .1, .1)
+                            glTranslatef(0, 0.005, 0)
+                            glScalef(.05, float(words[2])/2, .05)
                             drawObj(boxObj)
                     else:
                         ### TORSO ###
-                        glTranslatef(0., .1, 0.)
                         if getExtraCred:
+                            glTranslatef(0., .1, 0.)
                             glScalef(.01, .01, .01)
                             drawObj(bodyObj)
                         else:
-                            glScalef(.05, .2, .05)
+                            #glTranslatef(float(words[1]), float(words[2]), float(words[3]))
+                            glScalef(.05, float(words[2])/2, .05)
                             drawObj(boxObj)
                 elif jointName == 'RightForeArm':
                     ### RIGHT ARM ###
@@ -114,7 +124,8 @@ def parseHierarchy(bvhFile):
                         glScalef(.01, .01, .01)
                         drawObj(armObj)
                     else:
-                        glScalef(.13, .05, .05)
+                        glRotatef(-90,0,0,1)
+                        glScalef(.05, float(words[1])/2, .05)
                         drawObj(boxObj)
                 elif jointName == 'RightHand':
                     if endSite:
@@ -124,8 +135,8 @@ def parseHierarchy(bvhFile):
                             glScalef(.01, .01, .01)
                             drawObj(handObj)
                         else:
-                            glTranslatef(-.2, .0, 0.)
-                            glScalef(.05, .05, .05)
+                            glRotatef(-90, 0, 0, 1)
+                            glScalef(.05, float(words[1])/2, .05)
                             drawObj(boxObj)
                     else:
                         ### RIGHT FOREARM ###
@@ -134,8 +145,8 @@ def parseHierarchy(bvhFile):
                             glScalef(.01, .01, .01)
                             drawObj(forearmObj)
                         else:
-                            glTranslatef(-.1, .0, 0.)
-                            glScalef(.20, .05, .05)
+                            glRotatef(-90, 0, 0, 1)
+                            glScalef(.05, float(words[1])/2, .05)
                             drawObj(boxObj)
                 elif jointName == 'LeftForeArm':
                     ### LEFT ARM ###
@@ -144,7 +155,8 @@ def parseHierarchy(bvhFile):
                         glScalef(-.01, .01, -.01)
                         drawObj(armObj)
                     else:
-                        glScalef(-.13, .05, -.05)
+                        glRotatef(-90, 0, 0, 1)
+                        glScalef(.05, float(words[1]) / 2, .05)
                         drawObj(boxObj)
                 elif jointName == 'LeftHand':
                     ### LEFT HAND ###
@@ -154,8 +166,8 @@ def parseHierarchy(bvhFile):
                             glScalef(-.01, .01, -.01)
                             drawObj(handObj)
                         else:
-                            glTranslatef(.2, .0, 0.)
-                            glScalef(-.05, .05, -.05)
+                            glRotatef(-90, 0, 0, 1)
+                            glScalef(.05, float(words[1]) / 2, .05)
                             drawObj(boxObj)
                     else:
                         ### LEFT FOREARM ###
@@ -164,8 +176,8 @@ def parseHierarchy(bvhFile):
                             glScalef(-.01, .01, -.01)
                             drawObj(forearmObj)
                         else:
-                            glTranslatef(.1, .0, 0.)
-                            glScalef(-.20, .05, -.05)
+                            glRotatef(-90, 0, 0, 1)
+                            glScalef(.05, float(words[1]) / 2, .05)
                             drawObj(boxObj)
                 elif jointName == 'RightLeg':
                     ### RIGHT THIGH ###
@@ -174,8 +186,8 @@ def parseHierarchy(bvhFile):
                         glTranslatef(0., -10, 0.)
                         drawObj(thighObj)
                     else:
-                        glScalef(.05, .2, .05)
-                        glTranslatef(0., -1, 0.)
+                        #glScalef(.05, .2, .05)
+                        glScalef(.05, float(words[2])/2, .05)
                         drawObj(boxObj)
                 elif jointName == 'RightFoot':
                     ### RIGHT FOOT ###
@@ -186,8 +198,8 @@ def parseHierarchy(bvhFile):
                             glScalef(.01, .01, .01)
                             drawObj(footObj)
                         else:
-                            glTranslatef(0, -.2, 0.)
-                            glScalef(.05, .05, .05)
+                            #glTranslatef(0, -.2, 0.)
+                            glScalef(.05, float(words[2])/2, .05)
                             drawObj(boxObj)
                     ### RIGHT CALF ###
                     else:
@@ -196,8 +208,8 @@ def parseHierarchy(bvhFile):
                             glScalef(.01, .01, .01)
                             drawObj(calfObj)
                         else:
-                            glTranslatef(0, -.2, 0.)
-                            glScalef(.05, .2, .05)
+                            #glTranslatef(0, -.2, 0.)
+                            glScalef(.05, float(words[2])/2, .05)
                             drawObj(boxObj)
                 elif jointName == 'LeftLeg':
                     ### LEFT THIGH ###
@@ -206,8 +218,8 @@ def parseHierarchy(bvhFile):
                         glTranslatef(0., -10, 0.)
                         drawObj(thighObj)
                     else:
-                        glScalef(-.05, .2, -.05)
-                        glTranslatef(0., -1, 0.)
+                        glScalef(.05, float(words[2])/2, .05)
+                        #glTranslatef(0., -1, 0.)
                         drawObj(boxObj)
                 elif jointName == 'LeftFoot':
                     ### LEFT FOOT ###
@@ -218,8 +230,8 @@ def parseHierarchy(bvhFile):
                             glScalef(-.01, .01, .01)
                             drawObj(footObj)
                         else:
-                            glTranslatef(0, -.2, 0.)
-                            glScalef(.05, .05, .05)
+                            #glTranslatef(0, -.2, 0.)
+                            glScalef(.05, float(words[2])/2, .05)
                             drawObj(boxObj)
                     ### LEFT CALF ###
                     else:
@@ -228,11 +240,12 @@ def parseHierarchy(bvhFile):
                             glScalef(-.01, .01, -.01)
                             drawObj(calfObj)
                         else:
-                            glTranslatef(0, -.2, 0.)
-                            glScalef(.05, .2, .05)
+                            #glTranslatef(0, -.2, 0.)
+                            glScalef(.05, float(words[2])/2, .05)
                             drawObj(boxObj)
                 glPopMatrix()
             glTranslatef(float(words[1]), float(words[2]), float(words[3]))
+            prevJointOffset = np.array([float(words[1]), float(words[2]), float(words[3])])
             endSite = False
 
         elif words[0] == 'CHANNELS':
@@ -443,7 +456,7 @@ def scroll_callback(window, xoffset, yoffset):
 
 
 def parseMotion(paths):
-    global motionData, framesTotal
+    global motionData, framesTotal, jointOffsetData
     frameTime = 0.
     joints = 0
     jointsList = []
@@ -459,6 +472,8 @@ def parseMotion(paths):
         if (words[0] == 'JOINT' or words[0] == 'ROOT'):
             joints += 1
             jointsList.append(words[1])
+        elif (words[0] == 'OFFSET'):
+            jointOffsetData.append([float(words[1]), float(words[2]), float(words[3])])
         elif (words[0] == 'Frames:'):
             framesTotal = int(words[1])
         elif (words[0] == 'Frame' and words[1] == 'Time:'):
