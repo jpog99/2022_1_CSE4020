@@ -40,7 +40,6 @@ gVertexArraySeparate = np.empty((0, 3)) #index array for v and vn
 bvhFile = ""
 framesIdx = 0
 framesTotal = 0
-jointOffsetData = []
 motionData = []
 currentMotion = ""
 
@@ -49,6 +48,8 @@ global boxObj,headObj,bodyObj,armObj,forearmObj,handObj,thighObj,calfObj,footObj
 
 I = np.identity(3)
 
+
+
 def parseHierarchy(bvhFile):
 
     jointName = ""
@@ -56,14 +57,12 @@ def parseHierarchy(bvhFile):
     extraCredFile = "sample-spin.bvh"
     if bvhFile.split('\\')[-1] == extraCredFile:
         getExtraCred = True
-    nextOffset = 0
 
     endSite = False
     currFrameMotion = currentMotion.split()
     idx = 0
     f = open(bvhFile, 'r')
     while True:
-        color = random.randint(0, 255)
         line = f.readline()
         if not line: break
         words = line.split()
@@ -80,172 +79,32 @@ def parseHierarchy(bvhFile):
         elif (words[0] == 'JOINT'):
             jointName = words[1]
         elif (words[0] == 'OFFSET'):
-            nextOffset += 1
+
+            ### LINE RENDERING MODE ###
             if mode_lineRendering:
-                glDisable(GL_LIGHTING)
-                glColor3ub(color,color,color)
-                glBegin(GL_POINTS)
+                glBegin(GL_LINES)
                 glVertex3fv(np.array([0, 0, 0]))
                 glVertex3fv(np.array([float(words[1]), float(words[2]), float(words[3])]))
                 glEnd()
 
+            ### BOX RENDERING MODE ###
             else:
-                #glTranslatef(float(words[1]), float(words[2]), float(words[3]))
                 glPushMatrix()
-                ### HIPS ###
-                if jointName == 'Spine':
-                    glScalef(.05, .005, .05)
-                    drawObj(boxObj)
-                elif jointName == 'Head':
-                    if endSite:
-                        ### HEAD ###
-                        if getExtraCred:
-                            glTranslatef(-.04, .1, .04)
-                            glScalef(.02, .02, .02)
-                            drawObj(headObj)
-                        else:
-                            glTranslatef(0, 0.005, 0)
-                            glScalef(.05, float(words[2])/2, .05)
-                            drawObj(boxObj)
-                    else:
-                        ### TORSO ###
-                        if getExtraCred:
-                            glTranslatef(0., .1, 0.)
-                            glScalef(.01, .01, .01)
-                            drawObj(bodyObj)
-                        else:
-                            #glTranslatef(float(words[1]), float(words[2]), float(words[3]))
-                            glScalef(.05, float(words[2])/2, .05)
-                            drawObj(boxObj)
-                elif jointName == 'RightForeArm':
-                    ### RIGHT ARM ###
-                    if getExtraCred:
-                        glTranslatef(-.11, .1, 0.)
-                        glScalef(.01, .01, .01)
-                        drawObj(armObj)
-                    else:
-                        glRotatef(-90,0,0,1)
-                        glScalef(.05, float(words[1])/2, .05)
-                        drawObj(boxObj)
-                elif jointName == 'RightHand':
-                    if endSite:
-                        ### RIGHT HAND ###
-                        if getExtraCred:
-                            glTranslatef(0., .15, 0.)
-                            glScalef(.01, .01, .01)
-                            drawObj(handObj)
-                        else:
-                            glRotatef(-90, 0, 0, 1)
-                            glScalef(.05, float(words[1])/2, .05)
-                            drawObj(boxObj)
-                    else:
-                        ### RIGHT FOREARM ###
-                        if getExtraCred:
-                            glTranslatef(0., .1, 0.)
-                            glScalef(.01, .01, .01)
-                            drawObj(forearmObj)
-                        else:
-                            glRotatef(-90, 0, 0, 1)
-                            glScalef(.05, float(words[1])/2, .05)
-                            drawObj(boxObj)
-                elif jointName == 'LeftForeArm':
-                    ### LEFT ARM ###
-                    if getExtraCred:
-                        glTranslatef(.11, .1, 0.)
-                        glScalef(-.01, .01, -.01)
-                        drawObj(armObj)
-                    else:
+                if getExtraCred: #for extra cred
+                    extraCred(jointName,endSite)
+                else:
+                    if "ForeArm" in jointName or "Hand" in jointName:
                         glRotatef(-90, 0, 0, 1)
-                        glScalef(.05, float(words[1]) / 2, .05)
+                        glScalef(1, float(words[1]) / 2, 1)
                         drawObj(boxObj)
-                elif jointName == 'LeftHand':
-                    ### LEFT HAND ###
-                    if endSite:
-                        if getExtraCred:
-                            glTranslatef(0., .15, 0.)
-                            glScalef(-.01, .01, -.01)
-                            drawObj(handObj)
-                        else:
-                            glRotatef(-90, 0, 0, 1)
-                            glScalef(.05, float(words[1]) / 2, .05)
-                            drawObj(boxObj)
+                    elif jointName == "Hips":
+                        glPopMatrix()
+                        continue
                     else:
-                        ### LEFT FOREARM ###
-                        if getExtraCred:
-                            glTranslatef(0., .1, 0.)
-                            glScalef(-.01, .01, -.01)
-                            drawObj(forearmObj)
-                        else:
-                            glRotatef(-90, 0, 0, 1)
-                            glScalef(.05, float(words[1]) / 2, .05)
-                            drawObj(boxObj)
-                elif jointName == 'RightLeg':
-                    ### RIGHT THIGH ###
-                    if getExtraCred:
-                        glScalef(.01, .01, .01)
-                        glTranslatef(0., -10, 0.)
-                        drawObj(thighObj)
-                    else:
-                        #glScalef(.05, .2, .05)
-                        glScalef(.05, float(words[2])/2, .05)
+                        glScalef(1, float(words[2]) / 2, 1)
                         drawObj(boxObj)
-                elif jointName == 'RightFoot':
-                    ### RIGHT FOOT ###
-                    if endSite:
-                        glRotatef(30, 1, 0, 0)
-                        if getExtraCred:
-                            glTranslatef(0, -.01, -.01)
-                            glScalef(.01, .01, .01)
-                            drawObj(footObj)
-                        else:
-                            #glTranslatef(0, -.2, 0.)
-                            glScalef(.05, float(words[2])/2, .05)
-                            drawObj(boxObj)
-                    ### RIGHT CALF ###
-                    else:
-                        if getExtraCred:
-                            glTranslatef(0, -.1, -.05)
-                            glScalef(.01, .01, .01)
-                            drawObj(calfObj)
-                        else:
-                            #glTranslatef(0, -.2, 0.)
-                            glScalef(.05, float(words[2])/2, .05)
-                            drawObj(boxObj)
-                elif jointName == 'LeftLeg':
-                    ### LEFT THIGH ###
-                    if getExtraCred:
-                        glScalef(-.01, .01, -.01)
-                        glTranslatef(0., -10, 0.)
-                        drawObj(thighObj)
-                    else:
-                        glScalef(.05, float(words[2])/2, .05)
-                        #glTranslatef(0., -1, 0.)
-                        drawObj(boxObj)
-                elif jointName == 'LeftFoot':
-                    ### LEFT FOOT ###
-                    if endSite:
-                        glRotatef(30, 1, 0, 0)
-                        if getExtraCred:
-                            glTranslatef(0, -.01, -.01)
-                            glScalef(-.01, .01, .01)
-                            drawObj(footObj)
-                        else:
-                            #glTranslatef(0, -.2, 0.)
-                            glScalef(.05, float(words[2])/2, .05)
-                            drawObj(boxObj)
-                    ### LEFT CALF ###
-                    else:
-                        if getExtraCred:
-                            glTranslatef(0, -.1, -.05)
-                            glScalef(-.01, .01, -.01)
-                            drawObj(calfObj)
-                        else:
-                            #glTranslatef(0, -.2, 0.)
-                            glScalef(.05, float(words[2])/2, .05)
-                            drawObj(boxObj)
                 glPopMatrix()
             glTranslatef(float(words[1]), float(words[2]), float(words[3]))
-            prevJointOffset = np.array([float(words[1]), float(words[2]), float(words[3])])
             endSite = False
 
         elif words[0] == 'CHANNELS':
@@ -274,6 +133,90 @@ def parseHierarchy(bvhFile):
                     glRotatef(Rz, 0, 0, 1)
 
                 idx += 1
+
+
+def extraCred(jointName,endSite):
+    ### HIPS ###
+    if jointName == 'Spine':
+        glScalef(.05, .005, .05)
+        drawObj(boxObj)
+    elif jointName == 'Head':
+        if endSite:
+            ### HEAD ###
+            glTranslatef(-.04, .1, .04)
+            glScalef(.02, .02, .02)
+            drawObj(headObj)
+        else:
+            ### TORSO ###
+            glTranslatef(0., .1, 0.)
+            glScalef(.01, .01, .01)
+            drawObj(bodyObj)
+    elif jointName == 'RightForeArm':
+        ### RIGHT ARM ###
+        glTranslatef(-.11, .1, 0.)
+        glScalef(.01, .01, .01)
+        drawObj(armObj)
+    elif jointName == 'RightHand':
+        if endSite:
+            ### RIGHT HAND ###
+            glTranslatef(0., .15, 0.)
+            glScalef(.01, .01, .01)
+            drawObj(handObj)
+        else:
+            ### RIGHT FOREARM ###
+            glTranslatef(0., .1, 0.)
+            glScalef(.01, .01, .01)
+            drawObj(forearmObj)
+    elif jointName == 'LeftForeArm':
+        ### LEFT ARM ###
+        glTranslatef(.11, .1, 0.)
+        glScalef(-.01, .01, -.01)
+        drawObj(armObj)
+    elif jointName == 'LeftHand':
+        ### LEFT HAND ###
+        if endSite:
+            glTranslatef(0., .15, 0.)
+            glScalef(-.01, .01, -.01)
+            drawObj(handObj)
+        else:
+            ### LEFT FOREARM ###
+            glTranslatef(0., .1, 0.)
+            glScalef(-.01, .01, -.01)
+            drawObj(forearmObj)
+    elif jointName == 'RightLeg':
+        ### RIGHT THIGH ###
+        glScalef(.01, .01, .01)
+        glTranslatef(0., -10, 0.)
+        drawObj(thighObj)
+    elif jointName == 'RightFoot':
+        ### RIGHT FOOT ###
+        if endSite:
+            glRotatef(30, 1, 0, 0)
+            glTranslatef(0, -.01, -.01)
+            glScalef(.01, .01, .01)
+            drawObj(footObj)
+        ### RIGHT CALF ###
+        else:
+            glTranslatef(0, -.1, -.05)
+            glScalef(.01, .01, .01)
+            drawObj(calfObj)
+    elif jointName == 'LeftLeg':
+        ### LEFT THIGH ###
+        glScalef(-.01, .01, -.01)
+        glTranslatef(0., -10, 0.)
+        drawObj(thighObj)
+    elif jointName == 'LeftFoot':
+        ### LEFT FOOT ###
+        if endSite:
+            glRotatef(30, 1, 0, 0)
+            glTranslatef(0, -.01, -.01)
+            glScalef(-.01, .01, .01)
+            drawObj(footObj)
+        ### LEFT CALF ###
+        else:
+            glTranslatef(0, -.1, -.05)
+            glScalef(-.01, .01, -.01)
+            drawObj(calfObj)
 
 def render():
     global gVertexArraySeparate
@@ -456,7 +399,7 @@ def scroll_callback(window, xoffset, yoffset):
 
 
 def parseMotion(paths):
-    global motionData, framesTotal, jointOffsetData
+    global motionData, framesTotal
     frameTime = 0.
     joints = 0
     jointsList = []
@@ -472,8 +415,6 @@ def parseMotion(paths):
         if (words[0] == 'JOINT' or words[0] == 'ROOT'):
             joints += 1
             jointsList.append(words[1])
-        elif (words[0] == 'OFFSET'):
-            jointOffsetData.append([float(words[1]), float(words[2]), float(words[3])])
         elif (words[0] == 'Frames:'):
             framesTotal = int(words[1])
         elif (words[0] == 'Frame' and words[1] == 'Time:'):
