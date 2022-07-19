@@ -166,6 +166,7 @@ def render(t):
 
     glBegin(GL_LINES)
     glVertex3fv(np.array([-1., 0., 0.]))
+
     glVertex3fv(np.array([1., 0., 0.]))
     glVertex3fv(np.array([0., -1., 0.]))
     glVertex3fv(np.array([0., 1., 0.]))
